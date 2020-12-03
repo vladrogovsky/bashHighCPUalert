@@ -1,0 +1,30 @@
+#!/bin/bash
+loop=true
+me=`basename "$0"`
+maxCPU=45
+if [ "$1" == "set" ];
+then
+ maxCPU=$2
+fi
+while $loop; do
+  procCPU="$(top -o %CPU -b -n 1 | sed -n 8p | awk '{print $9}')"
+  procCPU=${procCPU%.*}
+  procName="$(top -o %CPU -b -n 1 | sed -n 8p | awk '{print $12}')"
+  if [ "$procCPU" -gt "$maxCPU" ]; 
+  then
+  	curDat="["$(date +%d-%m-%Y\ %H:%M:%S)"]"\ "Process [$procName] Use: [$procCPU%]"
+  	echo "$curDat" >> $HOME/cpu_alert.txt
+  	echo "" >> $HOME/cpu_alert.txt
+  	sleep 10
+  fi
+  if [ "$1" == "show" ];
+  then
+    notify-send 'CPU alert!' "Process [$procName] Use: [$procCPU%]" -i /usr/share/pixmaps/XMind.png
+  	loop=false
+  fi
+  if [ "$1" == "kill" ];
+  then
+  	echo "kill"
+  	killall $me
+  fi
+done

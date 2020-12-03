@@ -1,0 +1,29 @@
+#!/bin/bash
+loop=true
+me=`basename "$0"`
+maxCPU=45
+if [ "$1" == "set" ];
+then
+ maxCPU=$2
+fi
+while $loop; do
+  highest_cpu="$(ps -eo %C --sort -%cpu | awk 'NR==2 {print $1}')"
+  highest_cpu=${highest_cpu%.*}
+  procCPU="$(top -o %CPU -b -n 1 | sed -n 8p | awk '{print $9}')"
+  procName="$(top -o %CPU -b -n 1 | sed -n 8p | awk '{print $12}')"
+  if [ "$highest_cpu" -gt "$maxCPU" ]; 
+  then
+  	notify-send 'CPU alert!' "Hight CPU:[$highest_cpu%]. Processor [$procName] Use: [$procCPU%]" -i /usr/share/pixmaps/XMind.png
+  	sleep 60
+  fi
+  if [ "$1" == "show" ];
+  then
+  	notify-send 'CPU alert!' "Hight CPU:[$highest_cpu%]. Processor [$procName] Use: [$procCPU%]" -i /usr/share/pixmaps/XMind.png
+  	loop=false
+  fi
+  if [ "$1" == "kill" ];
+  then
+  	echo "kill"
+  	killall $me
+  fi
+done
